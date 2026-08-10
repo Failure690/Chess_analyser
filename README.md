@@ -35,3 +35,78 @@ Chess.com and Lichess both expose free public APIs with rich per-game data (play
 - [ ] Basic analysis layer (pandas stats, simple sklearn model)
 
 ## Project structure
+
+chess-tracker/
+├── clients/
+│ ├── chesscom.py # Chess.com API client
+│ └── lichess.py # Lichess API client
+├── models.py # SQLAlchemy models: Player, Game, Opening
+├── ingest.py # fetch -> normalize -> store
+├── db.py # engine/session setup
+├── analysis/ # notebooks/scripts for stats and ML
+├── main.py # CLI entrypoint
+├── requirements.txt
+└── README.md
+
+## Data sources
+
+- [Chess.com Published-Data API](https://www.chess.com/news/view/published-data-api) — no auth required
+- [Lichess API](https://lichess.org/api) — no auth required for public data; supports PGN and NDJSON export
+
+## Setup
+
+```bash
+git clone https://github.com/<your-username>/chess-tracker.git
+cd chess-tracker
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+## Usage
+
+```bash
+python main.py track <username> --source chesscom
+python main.py track <username> --source lichess
+python main.py sync
+```
+
+*(CLI is still being built — this section will be updated as commands land.)*
+
+## Data model
+
+Both APIs return different shapes; games are normalized into a common schema roughly like:
+
+| Field         | Description                                  |
+|---------------|-----------------------------------------------|
+| `id`          | Unique game ID                                |
+| `source`      | `chesscom` or `lichess`                       |
+| `white_id` / `black_id` | Player references                  |
+| `result`      | `1-0`, `0-1`, `1/2-1/2`                        |
+| `time_control`| `bullet`, `blitz`, `rapid`, `classical`       |
+| `eco`         | ECO opening code                              |
+| `opening_name`| Human-readable opening name                   |
+| `date`        | Date/time played                              |
+| `pgn`         | Full move list in PGN format                  |
+
+## Roadmap
+
+1. Chess.com client → fetch and print one player's monthly archive
+2. SQLite storage via SQLAlchemy
+3. Lichess client, normalized into the same schema
+4. `python-chess` parsing for openings, move counts, material swings
+5. CLI for tracking/backfilling multiple usernames
+6. Analysis layer: pandas stats, simple sklearn model
+
+## Contributing
+
+This is currently a personal/learning project, but issues and suggestions are welcome. If you'd like to contribute:
+
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Commit your changes
+4. Open a pull request
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
