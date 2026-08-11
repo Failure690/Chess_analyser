@@ -80,14 +80,39 @@ def normalize_game(raw_game: dict) -> dict:
 
 
 if __name__ == "__main__":
-    username = "hikaru"
-    archives = get_archives(username)
-    print(f"{username} has {len(archives)} monthly archives")
+    username = input("Please input your Chess.com Username: ")
+    current_username = username.strip().lower()
 
-    latest_month_games = get_games_for_month(archives[-1])
-    print(f"Most recent month has {len(latest_month_games)} games")
+    while True:
+        archives = get_archives(current_username)
+        print(f"\n{current_username} has {len(archives)} months of games available.")
 
-    if latest_month_games:
-        clean_game = normalize_game(latest_month_games[0])
-        for key, value in clean_game.items():
-            print(f"{key}: {value}")
+        latest_month_games = get_games_for_month(archives[-1])
+        print(f"Most recent month has {len(latest_month_games)} games.")
+
+        # Build a list of opponents from the most recent month of games
+
+        opponents = []
+        for game in latest_month_games:
+            clean_game = normalize_game(game)
+            if clean_game["white_username"].lower() == current_username:
+                opponent = clean_game["black_username"]
+            else:
+                opponent = clean_game["white_username"]
+            opponents.append(opponent)
+
+        # Print a numbered list of opponents for the user to choose from
+
+        for i, opponent in enumerate(opponents, start=1):
+            print(f"{i}. {opponent}")
+
+        choice = input("\nEnter the number of the opponent you want to analyze (or 'q' to quit): ")
+
+        if choice.lower() == "q":
+            break
+        
+        try:
+            index = int(choice) -1
+            current_username = opponents[index].strip().lower()
+        except (ValueError, IndexError):
+            print("Invalid choice. Please try again.")
